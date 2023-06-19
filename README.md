@@ -49,11 +49,16 @@ You need to alter the camera configuration in your /boot/config.txt file.to add 
   sudo apt-get install build-essential cmake 
   sudo apt-get install libopencv-dev
 ```
-##### Compilation
+#### Capture and store pictures in amplitude and preview
+
 ```Shell
-  cd Arducam_tof_camera/example
+  cd Arducam_tof_camera/orientation_camera
   mkdir build && cd build
   cmake .. && make
+```
+> Run in the orientation_camera/build folder
+```Shell
+  ./orientation_camera
 ```
 ### Start
 #### c test

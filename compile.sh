@@ -2,7 +2,7 @@
 # compile script
 workpath=${PWD##*/}
 execfunc=cpp/preview_depth
-if [ ! "$workpath" = "Arducam_tof_camera" ] && [ ! "$workpath" = "arducam_tof_camera" ] ; then
+if [ ! "$workpath" = "Arducam_tof_camera" ] && [ ! "$workpath" = "arducam_tof_camera" ] && [ ! "$workpath" = "arducam_tof_orientation_camera" ]; then
   echo "The compiled script is moved and cannot be executed normally!"
 else
   if [ ! -d "example" ]; then
