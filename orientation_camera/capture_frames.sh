@@ -1,11 +1,7 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 mkdir build 
 cd build
-=======
-mkdir build && cd build
->>>>>>> bd4609c (ssh for executing the file added)
 
 cmake ..
 make
