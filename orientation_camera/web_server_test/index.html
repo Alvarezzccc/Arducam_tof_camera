@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajax Streaming Webcam</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #video-container {
+            width: 75vw; /* 80% of the viewport width */
+            position: relative;
+            overflow: auto;
+        }
+
+        #bloc {
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio (height/width * 100) */
+            position: relative;
+        }
+
+        #stream {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            top: 0;
+            left: 0;
+            object-fit: contain;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+			position: relative;
+			top: -30px; /* Adjust the relative position higher or lower */
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            font-size: 35px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: 5px solid #3498db;
+            color: #3498db;
+            border-radius: 35px;
+			margin-right: 50px; /* Increase the margin between buttons */
+        }
+
+        .action-button:hover {
+            background-color: #3498db;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <div id="bloc">
+            <img id="stream" src="" alt="Camera Stream">
+        </div>
+    </div>
+    <div class="action-buttons">
+        <a href="javascript:stream_on()" class="action-button">ON</a>
+        <a href="javascript:stream_off()" class="action-button">OFF</a>
+    </div>
+
+
+    <script>
+        var stream = document.getElementById('stream'), isStreamOn = false;
+        var options = {
+            swffile: "webcam.swf",
+            wrapper: "webcam",
+            jpgQuality: 60,
+            jpgEncode: 0,
+            refresh: 100 // refresh (ms)
+        };
+
+        function getLocalIP(callback) {
+            var connection = new RTCPeerConnection();
+            connection.createDataChannel('');
+            connection.createOffer().then(function (offer) {
+                var regex = /(?:\d{1,3}\.){3}\d{1,3}/;
+                var match = offer.sdp.match(regex);
+                callback(match[0]);
+                connection.close();
+            });
+        }
+
+        function stream_cam() {
+            getLocalIP(function (localIP) {
+                stream.src = 'http://192.168.0.19:80/stream?rand=' + new Date().getTime();
+            });
+        }
+
+        function stream_off() {
+            if (isStreamOn) {
+                clearInterval(vue);
+                isStreamOn = false;
+            }
+        }
+
+        function stream_on() {
+            if (!isStreamOn) {
+                vue = setInterval('stream_cam();', options.refresh);
+                isStreamOn = true;
+            }
+        }
+
+        // Resize video box with the window size
+        window.addEventListener('resize', function () {
+            var videoContainer = document.getElementById('video-container');
+            var videoBox = document.getElementById('bloc');
+            videoBox.style.height = videoContainer.offsetWidth * 0.5625 + 'px'; // 16:9 aspect ratio
+        });
+
+        // Initial resize when the page loads
+        window.addEventListener('load', function () {
+            var videoContainer = document.getElementById('video-container');
+            var videoBox = document.getElementById('bloc');
+            videoBox.style.height = videoContainer.offsetWidth * 0.5625 + 'px'; // 16:9 aspect ratio
+        });
+    </script>
+</body>
+</html>
