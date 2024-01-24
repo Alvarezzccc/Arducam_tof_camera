@@ -3,6 +3,9 @@ project(orientation_camera)
 
 find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS system thread REQUIRED)
+find_package(PkgConfig REQUIRED)
+find_package(httplib REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # Find GStreamer and GStreamer App libraries
 find_package(PkgConfig REQUIRED)
@@ -20,9 +23,11 @@ include_directories(
     ${GSTAPP_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${MHD_INCLUDE_DIRS}
+    /usr/include/cpp    
 )
 
-add_executable(video_stream video_stream.cpp)
+add_executable(video_stream video_stream.cpp functions_web.cpp functions_camera.cpp)
+
 
 target_link_libraries(video_stream
     ${OpenCV_LIBS}
@@ -30,4 +35,5 @@ target_link_libraries(video_stream
     ${GSTREAMER_LIBRARIES}
     ${GSTAPP_LIBRARIES}
     ${MHD_LIBRARIES}
+    ArducamDepthCamera
 )

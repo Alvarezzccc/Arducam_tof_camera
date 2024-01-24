@@ -86,21 +86,11 @@
             refresh: 100 // refresh (ms)
         };
 
-        function getLocalIP(callback) {
-            var connection = new RTCPeerConnection();
-            connection.createDataChannel('');
-            connection.createOffer().then(function (offer) {
-                var regex = /(?:\d{1,3}\.){3}\d{1,3}/;
-                var match = offer.sdp.match(regex);
-                callback(match[0]);
-                connection.close();
-            });
-        }
+        // This line has to exist for the c program to fill in with IP address
+        const serverIpAddress ='';
 
         function stream_cam() {
-            getLocalIP(function (localIP) {
-                stream.src = 'http://192.168.0.19:80/stream?rand=' + new Date().getTime();
-            });
+            stream.src = 'http://' + serverIpAddress +':80/stream?rand=' + new Date().getTime();
         }
 
         function stream_off() {
