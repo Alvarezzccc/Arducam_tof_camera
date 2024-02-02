@@ -28,7 +28,7 @@ include_directories(
     /usr/include/cpp    
 )
 
-add_executable(video_stream video_stream.cpp functions_web.cpp functions_camera.cpp)
+add_executable(video_stream video_stream.cpp functions_web.cpp functions_network.cpp functions_camera.cpp)
 
 
 target_link_libraries(video_stream

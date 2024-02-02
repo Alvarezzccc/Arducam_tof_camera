@@ -1,17 +1,5 @@
 #include "globals.h"
 
-cv::Mat matRotateClockWise180(cv::Mat src)
-{
-    if (src.empty())
-    {
-        std::cerr << "RorateMat src is empty!";
-    }
-
-    flip(src, src, 0);
-    flip(src, src, 1);
-    return src;
-}
-
 void p(std::string errorMsg){
     std::cerr << errorMsg << std::endl;
 }
@@ -28,7 +16,7 @@ void getPreview(uint8_t *preview_ptr, float *phase_image_ptr, float *amplitude_i
     }
 }
 
-void processArducamTOFImage(ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_t *preview_ptr, httplib::Response &res) {
+void processArducamToFFrame(ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_t *preview_ptr, httplib::Response &res) {
     // Here we process the Arducam ToF image and send it to the frame buffer
     ArducamFrameBuffer *frame;
     float *depth_ptr, *amplitude_ptr;
@@ -40,18 +28,20 @@ void processArducamTOFImage(ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_
         getPreview(preview_ptr, depth_ptr, amplitude_ptr);
 
         cv::Mat result_frame(tofFormat.height, tofFormat.width, CV_8U, preview_ptr);
-        result_frame = matRotateClockWise180(result_frame);
         cv::applyColorMap(result_frame, result_frame, cv::COLORMAP_JET);
 
-        std::vector<uchar> buf;
-        cv::imencode(".jpg", result_frame, buf);
-        res.set_content(reinterpret_cast<const char *>(buf.data()), buf.size(), "image/jpeg");
+        bool guiAvailable = checkGUIAvailable();
+        if (guiAvailable) {
+            cv::imshow("preview", result_frame);
+        }
+
+        sendFrameToBrowser(result_frame, res);
+
     } else {
         std::cerr << "Error: Unable to get frame." << std::endl;
     }
     tof.releaseFrame(frame);
 }
-
 
 // Function to capture and stream webcam frames
 void captureAndStreamToF(const std::string &address, int port) {
@@ -89,37 +79,12 @@ void captureAndStreamToF(const std::string &address, int port) {
 
     p("Image pointers initialized");
 
-    startServer(address, port, tof, tofFormat, preview_ptr);
-}
-
-// Function to capture and stream webcam frames
-void captureAndStream(const std::string &address, int port) {
-    cv::VideoCapture cap(0);
-    if (!cap.isOpened()) {
-        std::cerr << "Error opening webcam" << std::endl;
-        return;
+    // Check for GUI availability
+    bool guiAvailable = checkGUIAvailable();
+    if (guiAvailable) {
+        // Opencv Window
+        cv::namedWindow("preview", cv::WINDOW_AUTOSIZE);
     }
 
-    httplib::Server svr; // Create an instance of the httplib server
-
-    // Serve the HTML file on the root URL
-    svr.Get("/", [&](const httplib::Request & /*req*/, httplib::Response &res) {
-        std::string html_content = read_file("../index.html"); // Adjust the path accordingly
-        res.set_content(html_content, "text/html");
-    });
-
-    // Stream webcam frames on the /stream URL
-    svr.Get("/stream", [&](const httplib::Request & /*req*/, httplib::Response &res) {
-        cv::Mat frame;
-        cap >> frame;
-
-        std::vector<uchar> buf;
-        cv::imencode(".jpg", frame, buf);
-
-        res.set_content(reinterpret_cast<const char *>(buf.data()), buf.size(), "image/jpeg");
-    });
-
-    std::cout << "Server started on port " << port << std::endl;
-
-    svr.listen(address.c_str(), port); // Start the server
+    startServer(address, port, tof, tofFormat, preview_ptr);
 }
