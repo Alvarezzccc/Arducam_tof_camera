@@ -21,6 +21,9 @@
 #include <iomanip>
 #include <sstream>
 #include <httplib.h>
+#include <cstdlib>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // MAX_DISTANCE value modifiable  is 2 or 4
 #define MAX_DISTANCE 4
@@ -29,13 +32,16 @@
 using namespace Arducam;
 using namespace std;
 
+void startWifiAP();
+
 std::string get_ip_address();
 std::string read_file(const std::string &filename);
-void captureAndStream(const std::string &address, int port);
 void captureAndStreamToF(const std::string &address, int port);
-cv::Mat matRotateClockWise180(cv::Mat src);
 void getPreview(uint8_t *preview_ptr, float *phase_image_ptr, float *amplitude_image_ptr);
 void p(std::string errorMsg);
 
-void processArducamTOFImage(ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_t *preview_ptr, httplib::Response &res);
+void processArducamToFFrame(ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_t *preview_ptr, httplib::Response &res);
 void startServer(const std::string& address, int port, ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_t *preview_ptr);
+void sendFrameToBrowser(const cv::Mat& frame, httplib::Response& res);
+
+bool checkGUIAvailable();

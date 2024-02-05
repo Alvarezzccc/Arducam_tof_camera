@@ -25,39 +25,6 @@ std::string read_file(const std::string &filename) {
     return htmlContent;
 }
 
-
-std::string get_ip_address() {
-    struct ifaddrs *addrs, *tmp;
-    
-    if (getifaddrs(&addrs) != 0) {
-        // Handle error
-        return "Error";
-    }
-    
-    tmp = addrs;
-    while (tmp) {
-        if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
-            struct sockaddr_in *pAddr = (struct sockaddr_in *)tmp->ifa_addr;
-            
-            // Check if it's not the loopback interface
-            if (strcmp(tmp->ifa_name, "lo") != 0) {
-                char buffer[INET_ADDRSTRLEN];
-                const char *ip = inet_ntop(AF_INET, &(pAddr->sin_addr), buffer, INET_ADDRSTRLEN);
-                
-                freeifaddrs(addrs);
-                
-                if (ip != nullptr) {
-                    return std::string(ip);
-                }
-            }
-        }
-        tmp = tmp->ifa_next;
-    }
-    
-    freeifaddrs(addrs);
-    return "Error";
-}
-
 void startServer(const std::string& address, int port, ArducamTOFCamera &tof, CameraInfo &tofFormat, uint8_t *preview_ptr) {
     httplib::Server svr;
     
@@ -70,9 +37,22 @@ void startServer(const std::string& address, int port, ArducamTOFCamera &tof, Ca
 
     // Serve webcam frames on the /stream URL
     svr.Get("/stream", [&](const httplib::Request & /*req*/, httplib::Response &res) {
-        processArducamTOFImage(tof, tofFormat, preview_ptr, res);
+        processArducamToFFrame(tof, tofFormat, preview_ptr, res);
     });
 
     std::cout << "Server started on port " << port << std::endl;
     svr.listen(address.c_str(), port); // Start the server
+}
+
+bool checkGUIAvailable() {
+    // Function to check if a GUI is available
+    // This is a simplistic check; you might need a more robust check depending on your environment
+    return getenv("DISPLAY") != nullptr;
+}
+
+// Function to send frame to the browser
+void sendFrameToBrowser(const cv::Mat& frame, httplib::Response& res) {
+    std::vector<uchar> buf;
+    cv::imencode(".jpg", frame, buf);
+    res.set_content(reinterpret_cast<const char *>(buf.data()), buf.size(), "image/jpeg");
 }
