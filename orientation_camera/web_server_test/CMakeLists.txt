@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(orientation_camera)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
-
 find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS system thread REQUIRED)
 find_package(PkgConfig REQUIRED)
